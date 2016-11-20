@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="res"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="C:/Users/Jedi/Desktop/neo/versions/neo-0.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jedi/Desktop/Programming/ColorsAppWindows/libs/ColorScheme.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jedi/Desktop/Programming/ColorsAppWindows/libs/Filters.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
