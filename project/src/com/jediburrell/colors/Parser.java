@@ -197,7 +197,7 @@ class Parser {
                     palette.getColorSets().get(colorSetIndex).addColor(color);
                     
                     if(colorName.contains(" ")){
-                    	if(!colorName.contains(current_no_break)){
+                    	if(!colorName.startsWith(current_no_break)){
                     		if(current_no_break!=""){
                     			HashMap<String, java.awt.Color> cCopy =
                     					new HashMap<String, java.awt.Color>();
@@ -211,10 +211,11 @@ class Parser {
                     			
                     			System.out.println("   New Color Set: " + current_no_break);
                     		}
+                    	    
                     		current_no_break = colorName.split(" ")[0];
                     	}
                     }else{
-                    	if(!colorName.contains(current_no_break)){
+                    	if(!colorName.startsWith(current_no_break)){
                     		if(current_no_break!=""){
                     			HashMap<String, java.awt.Color> cCopy =
                     					new HashMap<String, java.awt.Color>();
@@ -226,6 +227,7 @@ class Parser {
                     			
                     			System.out.println("   New Color Set: " + current_no_break);
                     		}
+                    		
                     		current_no_break = colorName;
                     	}
                     }

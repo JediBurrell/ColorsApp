@@ -96,10 +96,12 @@ public class PaletteScene extends Scene{
 		float posY = PADDING*2+ICON_SIZE+PADDING*2;
 		
 		boolean first = true;
+		boolean second = false;
 		
 		for(Map.Entry<String, Map<String, Color>> entry : map.entrySet()){
 			if(first){
 				first = false;
+				second = true;
 				continue;
 			}
 			
@@ -149,8 +151,13 @@ public class PaletteScene extends Scene{
 				val = ent.getValue();
 			}
 			
+			if(second){
+				second = false;
+				listener.selected = name;
+			}
+			
 			ColorObject color = new ColorObject(PADDING+ICON_SIZE*0.25f, posY,
-					ICON_SIZE*1.5f, name+"", val, listener);
+					ICON_SIZE*1.5f, name, val, listener);
 			
 			handler.addObject(color);
 			posY+=PADDING*4+ICON_SIZE*2;
