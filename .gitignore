@@ -1,0 +1,9 @@
+*.log
+*.lock
+*.xmi
+*.fdt
+*.fdx
+*.frq
+*.nrm
+*.prx
+*.tis
