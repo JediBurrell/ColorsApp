@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.io.IOException;
 import java.util.Map;
@@ -18,6 +19,7 @@ import com.frostbyte.neo.Neo;
 import com.frostbyte.neo.framework.BufferedImageLoader;
 import com.frostbyte.neo.framework.FileManager;
 import com.frostbyte.neo.gui.TextObject;
+import com.frostbyte.neo.objects.GameObject;
 import com.frostbyte.neo.scene.Scene;
 import com.jediburrell.colors.*;
 import com.jediburrell.colors.objects.*;
@@ -35,6 +37,14 @@ public class PaletteScene extends Scene{
 	
 	private ColorListener listener;
 	private Map<String, Map<String, java.awt.Color>> map;
+	
+	private TextObject text;
+	
+	private float scrollY = 0;
+	private int maxScroll = 0;
+	
+	private int hover = 0;
+	private float velocity = 0;
 	
 	public PaletteScene(Neo neo, WindowOverride window) {
 		super(neo);
@@ -73,7 +83,7 @@ public class PaletteScene extends Scene{
 		} catch (IOException e) {
 		}
 		
-		TextObject text = new TextObject(0, 0);
+		text = new TextObject(0, 0);
 		text.setText("ColorsApp");
 		text.setFontColor(new Color(32, 32, 32));
 		text.setFont(Font.decode(Font.DIALOG_INPUT));
@@ -101,27 +111,42 @@ public class PaletteScene extends Scene{
 			String name = ent.getKey();
 			Color val = ent.getValue();
 			
-			if(!name.toLowerCase().contains("primary")&&!name.toLowerCase().contains("500")){
-				String current = "0";
-				while(it.hasNext()){
-					String k = it.next().getKey().toLowerCase();
-					if(k.contains("400")&&Integer.parseInt(current)<400)
-						{ name = ent.getKey(); val = ent.getValue(); current = "400"; }
-					else if(k.contains("300")&&Integer.parseInt(current)<300)
-						{ name = ent.getKey(); val = ent.getValue(); current = "300"; }
-					else if(k.contains("200")&&Integer.parseInt(current)<200)
-						{ name = ent.getKey(); val = ent.getValue(); current = "200"; }
-					else if(k.contains("100")&&Integer.parseInt(current)<100)
-						{ name = ent.getKey(); val = ent.getValue(); current = "100"; }
-					
-					if(k.contains("100")&&Integer.parseInt(current)<100)
-					{ name = ent.getKey(); val = ent.getValue(); current = "100"; }
-						if(k.contains("primary")||k.contains("500")){
-						name = ent.getKey();
-						val = ent.getValue();
-						break;
-					}
+			for(int i = 0; i < name.length(); i++){
+				try{
+					Integer.parseInt(name.substring(i, i+1));
+				}catch(Exception e){
+					continue;
 				}
+				
+				if(value.containsKey(name.substring(0, i)+"500")){
+					name = name.substring(0, i)+"500";
+					val = value.get(name.substring(0, i)+"500");
+				}
+				
+				break;
+			}
+			
+			if(!name.contains("500")){
+				for(int i = 0; i < name.length(); i++){
+					try{
+						Integer.parseInt(name.substring(i, i+1));
+					}catch(Exception e){
+						continue;
+					}
+					
+					if(value.containsKey(name.substring(0, i)+"400")){
+						name = name.substring(0, i)+"400";
+						val = value.get(name.substring(0, i)+"400");
+					}
+					
+					break;
+				}
+			}
+			
+			if(!name.contains("500")&&!name.contains("400")&&name.contains("50")){
+				ent = it.next();
+				name = ent.getKey();
+				val = ent.getValue();
 			}
 			
 			ColorObject color = new ColorObject(PADDING+ICON_SIZE*0.25f, posY,
@@ -132,13 +157,31 @@ public class PaletteScene extends Scene{
 		}
 		
 		handler.addObject(close);
-		handler.addObject(text);
 		
 	}
 
 	@Override
 	public void tick() {
 		handler.tick();
+		
+		if(maxScroll==0){
+			for(GameObject o : handler.object){
+				if(o.getY()>maxScroll)
+					maxScroll = (int) o.getY();
+			}
+			
+			maxScroll = Math.max(0, maxScroll-neo.height());
+		}
+		
+		for(GameObject o : handler.object){
+			if(o instanceof ColorObject)
+				((ColorObject)o).setOffsetY(-scrollY);
+		}
+		
+		if(hover<0)
+			scrollY = Math.max(0, scrollY - velocity);
+		else if(hover>0)
+			scrollY = Math.min(maxScroll, scrollY + velocity);
 		
 		if(opacity<1)
 			opacity+=0.075f;
@@ -148,8 +191,8 @@ public class PaletteScene extends Scene{
 	
 	@Override
 	public void render(Graphics arg0) {
-		((Graphics2D)arg0).setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		((Graphics2D)arg0).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		arg0.setColor(new Color(238, 238, 238));
 		arg0.fillRect(0, 0, neo.width(), neo.height());
@@ -157,12 +200,39 @@ public class PaletteScene extends Scene{
 		arg0.setColor(new Color(224, 224, 224));
 		arg0.fillRect(0, 0, neo.width(), PADDING*2+ICON_SIZE);
 		
+		handler.render(arg0);
+		
+		arg0.setColor(new Color(224, 224, 224));
+		arg0.fillRect(0, 0, PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE);
+		
 		arg0.setColor(new Color(189, 189, 189));
 		arg0.drawRoundRect(0, 0, neo.width()-1, neo.height()-1, 10, 10);
 		arg0.drawLine(0, PADDING*2+ICON_SIZE, neo.width(), PADDING*2+ICON_SIZE);
 		arg0.drawLine(PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE, PADDING*2+ICON_SIZE*2, neo.height());
 		
-		handler.render(arg0);
+		text.render(arg0);
+	}
+	
+	@Override
+	public boolean onHover(Rectangle r) {
+		super.onHover(r);
+		
+		Rectangle upperRectangle = new Rectangle(0, (int) (PADDING*2+ICON_SIZE),
+				PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE*2);
+		Rectangle lowerRectangle = new Rectangle(0, (int) neo.height()-(PADDING*2+ICON_SIZE*2),
+				PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE*2);
+		
+		if(r.intersects(upperRectangle)){
+			hover = -1;
+			velocity = (float) ((Math.max(0, upperRectangle.getHeight() - (r.getY() - (PADDING*2+ICON_SIZE))) * 5.0f) / upperRectangle.getHeight());
+		}else if(r.intersects(lowerRectangle)){
+			hover = 1;
+			velocity = (float) (((r.getY()-lowerRectangle.getY()) * 5.0f) / lowerRectangle.getHeight());
+		}else{
+			hover = 0;
+		}
+		
+		return false;
 	}
 
 }

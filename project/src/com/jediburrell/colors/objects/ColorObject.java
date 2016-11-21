@@ -19,6 +19,7 @@ public class ColorObject extends GameObject{
 	
 	private boolean hover = false;
 	private float offsetSize = 0;
+	private float offsetY = 0;
 	
 	public ColorObject(float x, float y, float size, String name, Color color, ColorListener listener) {
 		super(x, y, ObjectID.dummy);
@@ -35,14 +36,17 @@ public class ColorObject extends GameObject{
 		arg0.setColor(color);
 		
 		if(listener.selected==name){
-			((Graphics2D)arg0).setStroke(new BasicStroke(5));
-			arg0.drawOval((int)x-10, (int)y-10, (int)width+20, (int)height+20);
+			((Graphics2D)arg0).setStroke(new BasicStroke(3));
+			arg0.drawOval((int)x-5, (int) (y-5+offsetY), (int)width+10, (int)height+10);
 		}
 		
-		arg0.fillOval((int) x, (int) y, (int) (width+offsetSize), (int) (height+offsetSize));
+		arg0.fillOval((int) (x - offsetSize/2f), (int) (y - offsetSize/2f + offsetY), (int) (width+offsetSize), (int) (height+offsetSize));
 		
 		if(hover){
-			arg0.setColor(new Color(32, 32, 32));
+			arg0.setColor(color);
+			arg0.fillRoundRect((int) (x + width*1.5f), (int) (y+offsetY), name.length()*10, (int) height, 2, 2);
+			arg0.setColor(new Color(250, 250, 250));
+			arg0.drawString(name, (int) (x + width*1.75f), (int) (y+height/2+offsetY)+3);
 		}
 		
 		((Graphics2D)arg0).setStroke(new BasicStroke(1));
@@ -52,11 +56,15 @@ public class ColorObject extends GameObject{
 	@Override
 	public void tick(LinkedList<GameObject> objects) {
 		
-		if(hover&&offsetSize!=10)
+		if(hover&&offsetSize!=3)
 			offsetSize+=0.5f;
 		else if(offsetSize!=0)
 			offsetSize-=0.5f;
 		
+	}
+	
+	public void setOffsetY(float offsetY){
+		this.offsetY = offsetY;
 	}
 
 	@Override
@@ -77,7 +85,7 @@ public class ColorObject extends GameObject{
 	@Override
 	public Rectangle getBounds() {
 		// TODO Auto-generated method stub
-		return new Rectangle((int) x, (int) y, (int) width, (int) height);
+		return new Rectangle((int) x, (int) (y+offsetY), (int) width, (int) height);
 	}
 	
 	@Override
