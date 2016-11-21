@@ -1,17 +1,13 @@
 package com.jediburrell.colors;
 
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.Toolkit;
 
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
 import com.frostbyte.neo.Neo;
-import com.frostbyte.neo.Window;
 import com.frostbyte.neo.exceptions.UnchangableException;
 import com.jediburrell.colors.scene.PaletteScene;
 
+@SuppressWarnings("serial")
 public class Main extends Neo{
 
 	private static int PADDING = 10;
