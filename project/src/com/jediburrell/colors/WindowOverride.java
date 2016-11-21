@@ -16,8 +16,6 @@ public class WindowOverride extends Window{
 		frame = new JFrame(this.title);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setUndecorated(true);
-		
-		//frame.setOpacity(0f);
 	}
 	
 	@Override
