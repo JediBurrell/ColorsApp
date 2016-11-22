@@ -105,7 +105,7 @@ public class Main extends Neo{
 	// This exception won't be thrown.
 	public void createResources() throws EncryptionFailureException{
 		Resources.putInteger("copy_type", 0);
-		Resources.putString("ase_location", getDir()+"/.colorsapp/material.ase");
+		Resources.putString("ase_location", getDir()+"\\.colorsapp\\material.ase");
 	}
 	
 	public static String getDir()

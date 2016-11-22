@@ -6,18 +6,25 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.frostbyte.neo.Neo;
+import com.frostbyte.neo.exceptions.EncryptionFailureException;
 import com.frostbyte.neo.exceptions.ResourceNotFoundException;
 import com.frostbyte.neo.framework.BufferedImageLoader;
+import com.frostbyte.neo.framework.Resources;
 import com.frostbyte.neo.gui.TextObject;
 import com.frostbyte.neo.scene.Scene;
 import com.jediburrell.colors.Action;
+import com.jediburrell.colors.OnClickListener;
 import com.jediburrell.colors.WindowOverride;
 import com.jediburrell.colors.objects.ActionableIconObject;
+import com.jediburrell.colors.objects.ButtonObject;
 
 public class SettingsScene extends Scene{
 
@@ -29,9 +36,13 @@ public class SettingsScene extends Scene{
 	
 	private TextObject text, save, discard;
 	private ActionableIconObject close, minimize;
+	private ButtonObject with, without;
 	
 	private int hover = 0;
 	private int click = 0;
+	
+	private int copy;
+	private String ase;
 	
 	public SettingsScene(Neo neo, WindowOverride window) throws ResourceNotFoundException {
 		super(neo);
@@ -44,6 +55,12 @@ public class SettingsScene extends Scene{
 	
 	@Override
 	public void onLoad() {
+		
+		try {
+			copy = Resources.getInt("copy_type");
+			ase = Resources.getString("ase_location");
+		} catch (ResourceNotFoundException e1) {
+		}
 		
 		BufferedImageLoader iLoader = new BufferedImageLoader();
 		try {
@@ -93,6 +110,84 @@ public class SettingsScene extends Scene{
 		label1.setX(("Copy Style").length()*4);
 		label1.setY(PADDING*2+ICON_SIZE*2);
 		
+		with = new ButtonObject(0, PADDING*3+ICON_SIZE*2, neo.width()/2, PADDING*2+ICON_SIZE,
+				new OnClickListener() {
+					
+					@Override
+					public void onClick() {
+						
+						copy = 0;
+						with.setActive(true);
+						without.setActive(false);
+						
+					}
+					
+				});
+		with.setText("#FFFFFF");
+		without = new ButtonObject(neo.width()/2, PADDING*3+ICON_SIZE*2, neo.width()/2, PADDING*2+ICON_SIZE,
+				new OnClickListener() {
+					
+					@Override
+					public void onClick() {
+						
+						copy = 1;
+						with.setActive(false);
+						without.setActive(true);
+						
+					}
+					
+				});
+		without.setText("FFFFFF");
+		
+		if(copy==0)
+			with.setActive(true);
+		else
+			without.setActive(true);
+		
+		TextObject label2 = new TextObject(0, 0);
+		label2.setText("Adobe Colors");
+		label2.setFontColor(new Color(32, 32, 32));
+		label2.setFont(Font.decode(Font.DIALOG_INPUT));
+		label2.setFontSize(10);
+		label2.setX("Adobe Colors".length()*4);
+		label2.setY(with.getY()+with.getHeight()+PADDING*2);
+		
+		TextObject ase_location = new TextObject(0, 0);
+		ase_location.setText(ase);
+		ase_location.setFontColor(new Color(32, 32, 32));
+		ase_location.setFont(Font.decode(Font.DIALOG_INPUT));
+		ase_location.setFontSize(12);
+		ase_location.setX(neo.width()/2);
+		ase_location.setY(label2.getY()+PADDING*2);
+		
+		ButtonObject change_location = new ButtonObject(0, ase_location.getY()+PADDING*2,
+				neo.width(), PADDING*2+ICON_SIZE,
+				new OnClickListener() {
+					
+					@Override
+					public void onClick() {
+						
+						JFileChooser fc = new JFileChooser();
+						FileNameExtensionFilter filter =
+								new FileNameExtensionFilter("Adobe Color Palette", "ase");
+						fc.setFileFilter(filter);
+						int value = fc.showOpenDialog(window.getFrame());
+
+						File file = null;
+						if (value == JFileChooser.APPROVE_OPTION) {
+							file = fc.getSelectedFile();
+							if(file.getAbsolutePath().endsWith(".ase")){
+								ase = file.getAbsolutePath();
+								ase_location.setText(ase);
+							}
+						} else {
+						}
+						
+					}
+					
+				});
+		change_location.setText("Change Palette File");
+		
 		save = new TextObject(0, 0);
 		save.setText("Save");
 		save.setFontColor(new Color(32, 32, 32));
@@ -110,6 +205,11 @@ public class SettingsScene extends Scene{
 		discard.setY(neo.height()-ICON_SIZE);
 		
 		handler.addObject(label1);
+		handler.addObject(with);
+		handler.addObject(without);
+		handler.addObject(label2);
+		handler.addObject(ase_location);
+		handler.addObject(change_location);
 		handler.addObject(close);
 		handler.addObject(minimize);
 		
@@ -205,8 +305,27 @@ public class SettingsScene extends Scene{
 
 		click = 0;
 		
-		if(r.intersects(discardRectangle)) click = 0;
-		else if(r.intersects(saveRectangle)) click = 0;
+		if(r.intersects(discardRectangle))
+			try {
+				click = 0;
+				toScene(new PaletteScene(neo, window));
+			} catch (ResourceNotFoundException e) {
+			}
+		else if(r.intersects(saveRectangle)){
+			click = 0;
+			
+			try {
+				Resources.putInteger("copy_type", copy);
+				Resources.putString("ase_location", ase);
+			} catch (EncryptionFailureException e1) {
+			}
+			
+			try {
+				toScene(new PaletteScene(neo, window));
+			} catch (ResourceNotFoundException e) {
+				// Yeah, we kind know that the resources are found now... Cause we're here.
+			}
+		}
 		
 		return false;
 	}
