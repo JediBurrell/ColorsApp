@@ -109,15 +109,6 @@ public class PaletteScene extends Scene implements MouseWheelListener{
 		};
 		
 		onLoad();
-		
-		window.getFrame().addMouseWheelListener(this);
-	}
-	
-	@Override
-	public void toScene(Scene scene) {
-		super.toScene(scene);
-		
-		window.getFrame().removeMouseWheelListener(this);
 	}
 	
 	@Override
@@ -421,17 +412,7 @@ public class PaletteScene extends Scene implements MouseWheelListener{
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		if(e.getWheelRotation()>0){
-			if(hovers==1)
-				scrollY = Math.min(scrollY + 30, maxScroll);
-			else if(hovers==2)
-				scrollY_ = Math.min(scrollY_ + 30, maxScroll_);
-		}else{
-			if(hovers==1)
-				scrollY = Math.max(scrollY - 30, 0);
-			else if(hovers==2)
-				scrollY_ = Math.max(scrollY_ - 30, 0);
-		}
+		
 	}
 
 }

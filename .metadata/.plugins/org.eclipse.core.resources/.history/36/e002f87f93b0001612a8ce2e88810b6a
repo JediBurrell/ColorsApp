@@ -44,14 +44,14 @@ public class ColorObject extends GameObject{
 		
 		if(listener.selected==name){
 			((Graphics2D)arg0).setStroke(new BasicStroke(3));
-			arg0.drawOval((int)(x-6f), (int) (y-6+offsetY), (int)width+12, (int)height+12);
+			arg0.drawOval((int)x-5, (int) (y-5+offsetY), (int)width+10, (int)height+10);
 		}
 		
-		arg0.fillOval((int) (x - (offsetSize/2f)), (int) (y - (offsetSize/2f) + offsetY), (int) (width+offsetSize+1), (int) (height+1+offsetSize));
+		arg0.fillOval((int) (x - offsetSize/2f), (int) (y - offsetSize/2f + offsetY), (int) (width+offsetSize), (int) (height+offsetSize));
 		
 		if(hover){
 			arg0.setColor(color);
-			arg0.fillRoundRect((int) (x + width*1.5f), (int) (y+offsetY), name.length()*10, (int) height, 2, 2);
+			arg0.fillRoundRect((int) (x + width*1.44f), (int) (y+offsetY), name.length()*10, (int) height, 2, 2);
 			arg0.setColor(new Color(250, 250, 250));
 			arg0.drawString(name, (int) (x + width*1.75f), (int) (y+height/2+offsetY)+3);
 		}

@@ -423,9 +423,9 @@ public class PaletteScene extends Scene implements MouseWheelListener{
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if(e.getWheelRotation()>0){
 			if(hovers==1)
-				scrollY = Math.min(scrollY + 30, maxScroll);
+				scrollY = Math.min(scrollY + 10, maxScroll);
 			else if(hovers==2)
-				scrollY_ = Math.min(scrollY_ + 30, maxScroll_);
+				scrollY_ = Math.min(scrollY_ + 10, maxScroll_);
 		}else{
 			if(hovers==1)
 				scrollY = Math.max(scrollY - 30, 0);
