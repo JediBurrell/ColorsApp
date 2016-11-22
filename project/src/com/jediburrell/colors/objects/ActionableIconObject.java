@@ -20,17 +20,19 @@ public class ActionableIconObject extends GameObject{
 		
 		this.width = this.height = size;
 		this.action = action;
-		this.icon = this.hover = this.click = icon;
+		this.icon = icon;
+		this.hover = icon;
+		this.click = icon;
 	}
 	
 	public void setHoverImage(BufferedImage hover){
 		this.hover = hover;
-		icons = new BufferedImage[]{icon, hover, click};
+		icons = new BufferedImage[]{icon, this.hover, click};
 	}
 	
 	public void setClickImage(BufferedImage click){
 		this.click = click;
-		icons = new BufferedImage[]{icon, hover, click};
+		icons = new BufferedImage[]{icon, hover, this.click};
 	}
 	
 	@Override

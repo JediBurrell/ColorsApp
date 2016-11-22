@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.swing.JFrame;
 import javax.swing.text.html.HTMLDocument.Iterator;
 
 import jto.colorscheme.ColorSet;
@@ -64,6 +65,7 @@ public class PaletteScene extends Scene{
 	public void onLoad() {
 
 		ActionableIconObject close = null;
+		ActionableIconObject minimize = null;
 		
 		BufferedImageLoader iLoader = new BufferedImageLoader();
 		try {
@@ -80,6 +82,20 @@ public class PaletteScene extends Scene{
 					});
 			close.setHoverImage(iLoader.loadImage("/ic_close_black_24dp_hover.png"));
 			close.setClickImage(iLoader.loadImage("/ic_close_black_24dp_click.png"));
+			
+			minimize = new ActionableIconObject(
+					neo.width()-ICON_SIZE*2-PADDING*2, PADDING, ICON_SIZE, iLoader.loadImage("/ic_minimize_black_24dp.png"),
+					new Action() {
+						
+						@Override
+						public void perform() {
+							
+							window.getFrame().setState(JFrame.ICONIFIED);
+							
+						}
+					});
+			minimize.setHoverImage(iLoader.loadImage("/ic_minimize_black_24dp_hover.png"));
+			minimize.setClickImage(iLoader.loadImage("/ic_minimize_black_24dp_click.png"));
 		} catch (IOException e) {
 		}
 		
@@ -164,6 +180,7 @@ public class PaletteScene extends Scene{
 		}
 		
 		handler.addObject(close);
+		handler.addObject(minimize);
 		
 	}
 
