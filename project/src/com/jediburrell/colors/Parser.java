@@ -147,6 +147,8 @@ class Parser {
             readBlock(buf, palette, colorSetIndex);
         }
         
+        if(currentName == null) return palette;
+        
         if(currentName.contains(" ")){
         		if(current_no_break!=""){
         			HashMap<String, java.awt.Color> cCopy =
