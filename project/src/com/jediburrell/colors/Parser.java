@@ -34,6 +34,8 @@ class Parser {
     private static Map<String, Map<String, java.awt.Color>> map = new HashMap<String, Map<String, java.awt.Color>>();
     private static Map<String, java.awt.Color> colors = new HashMap<String, java.awt.Color>();
     private static String current_no_break = ")(*";
+    
+    private static String currentName;
 
     static {
         IMAGE_FILE_TYPES.add(".jpg");
@@ -147,6 +149,35 @@ class Parser {
 
             readBlock(buf, palette, colorSetIndex);
         }
+        
+        if(currentName.contains(" ")){
+        		if(current_no_break!=""){
+        			HashMap<String, java.awt.Color> cCopy =
+        					new HashMap<String, java.awt.Color>();
+        			for(Map.Entry<String, java.awt.Color> entry : colors.entrySet()) {
+        			    cCopy.put(new String(entry.getKey()), new java.awt.Color(entry.getValue().getRGB()));
+        			}
+        			map.put(currentName, cCopy);
+        			colors = new HashMap<String, java.awt.Color>();
+        			
+        			System.out.println(map.get(currentName).toString());
+        			
+        			System.out.println("   New Color Set: " + current_no_break);
+        		}
+        }else{
+        	if(!currentName.startsWith(current_no_break)){
+        			HashMap<String, java.awt.Color> cCopy =
+        					new HashMap<String, java.awt.Color>();
+        			for(Map.Entry<String, java.awt.Color> entry : colors.entrySet()) {
+        			    cCopy.put(new String(entry.getKey()), new java.awt.Color(entry.getValue().getRGB()));
+        			}
+        			map.put(currentName, cCopy);
+        			colors = new HashMap<String, java.awt.Color>();
+        			
+        			System.out.println("   New Color Set: " + current_no_break);
+        		}
+        }
+        
         return palette;
     }
 
@@ -195,6 +226,8 @@ class Parser {
                             color.blue, types[type]);
                     System.out.println();
                     palette.getColorSets().get(colorSetIndex).addColor(color);
+                    
+                    currentName = colorName;
                     
                     if(colorName.contains(" ")){
                     	if(!colorName.startsWith(current_no_break)){

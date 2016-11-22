@@ -7,10 +7,16 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.JFrame;
 import javax.swing.text.html.HTMLDocument.Iterator;
@@ -45,13 +51,25 @@ public class PaletteScene extends Scene{
 	
 	private boolean settings = false;
 	
+	// Color palette scrolling.
+	
 	private float scrollY = 0;
 	private int maxScroll = 0;
 	
 	private int hover = 0;
 	private float velocity = 0;
 	
+	// Color scrolling.
+	
+	private float scrollY_ = 0;
+	private int maxScroll_ = 0;
+	
+	private int hover_ = 0;
+	private float velocity_ = 0;
+	
 	private LinkedList<ColorSelectorObject> colorSelectors = new LinkedList<ColorSelectorObject>();
+	private LinkedList<GameObject> toAdd = new LinkedList<GameObject>();
+	private LinkedList<GameObject> toRemove = new LinkedList<GameObject>();
 	
 	public PaletteScene(Neo neo, WindowOverride window) {
 		super(neo);
@@ -67,22 +85,28 @@ public class PaletteScene extends Scene{
 			public void onColorChanged(String name) {
 				super.onColorChanged(name);
 				
+				scrollY_ = 0;
+				
 				for(ColorSelectorObject selector : colorSelectors){
-					handler.removeObject(selector);
+					toRemove.add(selector);
 				}
 				
 				colorSelectors.clear();
 				
 				float yOffset = PADDING*1.5f+ICON_SIZE+PADDING*2;
 				
-				for(Entry<String, Color> entry : listener.colors.entrySet()){
+				TreeMap<String, Color> sorted = new TreeMap<String, Color>(listener.colors);
+				
+				for(Entry<String, Color> entry : sorted.entrySet()){
 					colorSelectors.add(new ColorSelectorObject(PADDING*3+ICON_SIZE*2, yOffset,
 							neo.width()-(PADDING*4+ICON_SIZE*2), ICON_SIZE*2, entry.getKey(), entry.getValue()));
 					
-					handler.addObject(colorSelectors.getLast(), 0);
+					toAdd.add(colorSelectors.getLast());
 					
 					yOffset += PADDING*2+ICON_SIZE*2;
 				}
+				
+				maxScroll_ = (int) (yOffset-neo.height());
 			}
 			
 		};
@@ -149,9 +173,17 @@ public class PaletteScene extends Scene{
 			Map<String, Color> value = entry.getValue();
 			
 			java.util.Iterator<Entry<String, Color>> it = value.entrySet().iterator();
-			Map.Entry<String, Color> ent = it.next();
-			String name = ent.getKey();
-			Color val = ent.getValue();
+			
+			Map.Entry<String, Color> ent;
+			String name;
+			Color val;
+			try{
+				ent = it.next();
+				name = ent.getKey();
+				val = ent.getValue();
+			}catch(NoSuchElementException e){
+				continue;
+			}
 			
 			for(int i = 0; i < name.length(); i++){
 				try{
@@ -218,7 +250,7 @@ public class PaletteScene extends Scene{
 		if(maxScroll==0){
 			for(GameObject o : handler.object){
 				if(o.getY()>maxScroll)
-					maxScroll = (int) o.getY();
+					maxScroll = (int) (o.getY()+o.getHeight()+PADDING*2);
 			}
 			
 			maxScroll = Math.max(0, maxScroll-neo.height());
@@ -227,12 +259,25 @@ public class PaletteScene extends Scene{
 		for(GameObject o : handler.object){
 			if(o instanceof ColorObject)
 				((ColorObject)o).setOffsetY(-scrollY);
+			else if(o instanceof ColorSelectorObject)
+				((ColorSelectorObject)o).setOffsetY(-scrollY_);
 		}
+		
+		handler.object.addAll(0, toAdd);
+		toAdd.clear();
+		
+		handler.object.removeAll(toRemove);
+		toRemove.clear();
 		
 		if(hover<0)
 			scrollY = Math.max(0, scrollY - velocity);
 		else if(hover>0)
 			scrollY = Math.min(maxScroll, scrollY + velocity);
+		
+		if(hover_<0)
+			scrollY_ = Math.max(0, scrollY_ - velocity_);
+		else if(hover_>0)
+			scrollY_ = Math.min(maxScroll_, scrollY_ + velocity_);
 		
 		if(opacity<1)
 			opacity+=0.075f;
@@ -279,6 +324,12 @@ public class PaletteScene extends Scene{
 				PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE*2);
 		Rectangle lowerRectangle = new Rectangle(0, (int) neo.height()-(PADDING*2+ICON_SIZE*2),
 				PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE*2);
+		
+		Rectangle upperRectangle_ = new Rectangle(PADDING*2+ICON_SIZE*2, (int) (PADDING*2+ICON_SIZE),
+				neo.width()-(PADDING*2+ICON_SIZE*2), PADDING*2+ICON_SIZE*2);
+		Rectangle lowerRectangle_ = new Rectangle(PADDING*2+ICON_SIZE*2, (int) neo.height()-(PADDING*2+ICON_SIZE*2),
+				neo.width()-(PADDING*2+ICON_SIZE*2), PADDING*2+ICON_SIZE*2);
+		
 		Rectangle titleRectangle = new Rectangle(0, 0,
 				"Settings".length()*14, PADDING*2+ICON_SIZE);
 		
@@ -290,6 +341,16 @@ public class PaletteScene extends Scene{
 			velocity = (float) (((r.getY()-lowerRectangle.getY()) * 10.0f) / lowerRectangle.getHeight());
 		}else{
 			hover = 0;
+		}
+		
+		if(r.intersects(upperRectangle_)){
+			hover_ = -1;
+			velocity_ = (float) ((Math.max(0, upperRectangle_.getHeight() - (r.getY() - (PADDING*2+ICON_SIZE))) * 10.0f) / upperRectangle_.getHeight());
+		}else if(r.intersects(lowerRectangle_)){
+			hover_ = 1;
+			velocity_ = (float) (((r.getY()-lowerRectangle_.getY()) * 10.0f) / lowerRectangle_.getHeight());
+		}else{
+			hover_ = 0;
 		}
 		
 		if(r.intersects(titleRectangle)){

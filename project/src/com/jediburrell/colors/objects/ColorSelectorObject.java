@@ -36,6 +36,13 @@ public class ColorSelectorObject extends GameObject{
 		arg0.setFont(Font.decode(Font.DIALOG_INPUT).deriveFont(10));
 		arg0.drawString(hover ? "Copy to clipboard." : title, (int) (x+title.length()), (int) (offsetY+y+(height/2)+4));
 		
+		arg0.setColor(color.darker());
+		arg0.drawRoundRect((int) x, (int) (y+offsetY), (int) width, (int) height, 5, 5);
+		
+	}
+	
+	public void setOffsetY(float offsetY){
+		this.offsetY = offsetY;
 	}
 
 	@Override
