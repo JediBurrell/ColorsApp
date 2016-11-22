@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -40,12 +41,17 @@ public class PaletteScene extends Scene{
 	private Map<String, Map<String, java.awt.Color>> map;
 	
 	private TextObject text;
+	private ActionableIconObject close, minimize;
+	
+	private boolean settings = false;
 	
 	private float scrollY = 0;
 	private int maxScroll = 0;
 	
 	private int hover = 0;
 	private float velocity = 0;
+	
+	private LinkedList<ColorSelectorObject> colorSelectors = new LinkedList<ColorSelectorObject>();
 	
 	public PaletteScene(Neo neo, WindowOverride window) {
 		super(neo);
@@ -56,6 +62,29 @@ public class PaletteScene extends Scene{
 		map = colors.getMap();
 		
 		listener = new ColorListener() {
+			
+			@Override
+			public void onColorChanged(String name) {
+				super.onColorChanged(name);
+				
+				for(ColorSelectorObject selector : colorSelectors){
+					handler.removeObject(selector);
+				}
+				
+				colorSelectors.clear();
+				
+				float yOffset = PADDING*1.5f+ICON_SIZE+PADDING*2;
+				
+				for(Entry<String, Color> entry : listener.colors.entrySet()){
+					colorSelectors.add(new ColorSelectorObject(PADDING*3+ICON_SIZE*2, yOffset,
+							neo.width()-(PADDING*4+ICON_SIZE*2), ICON_SIZE*2, entry.getKey(), entry.getValue()));
+					
+					handler.addObject(colorSelectors.getLast(), 0);
+					
+					yOffset += PADDING*2+ICON_SIZE*2;
+				}
+			}
+			
 		};
 		
 		onLoad();
@@ -63,9 +92,6 @@ public class PaletteScene extends Scene{
 	
 	@Override
 	public void onLoad() {
-
-		ActionableIconObject close = null;
-		ActionableIconObject minimize = null;
 		
 		BufferedImageLoader iLoader = new BufferedImageLoader();
 		try {
@@ -106,8 +132,6 @@ public class PaletteScene extends Scene{
 		text.setFontSize(15);
 		text.setX(("ColorsApp").length()*6);
 		text.setY(PADDING*2+1);
-		
-		listener.selected = map.keySet().iterator().next();
 		
 		float posY = PADDING*2+ICON_SIZE+PADDING*2;
 		
@@ -169,11 +193,14 @@ public class PaletteScene extends Scene{
 			
 			if(second){
 				second = false;
-				listener.selected = name;
+				listener.colors = value;
+				listener.onColorChanged(name);
 			}
 			
 			ColorObject color = new ColorObject(PADDING+ICON_SIZE*0.25f, posY,
 					ICON_SIZE*1.5f, name, val, listener);
+			
+			color.setColors(value);
 			
 			handler.addObject(color);
 			posY+=PADDING*4+ICON_SIZE*2;
@@ -227,7 +254,12 @@ public class PaletteScene extends Scene{
 		handler.render(arg0);
 		
 		arg0.setColor(new Color(224, 224, 224));
-		arg0.fillRect(0, 0, PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE);
+		arg0.fillRect(0, 0, neo.width(), PADDING*2+ICON_SIZE);
+		
+		if(settings){
+			arg0.setColor(new Color(189, 189, 189));
+			arg0.fillRect(0, 0, "Settings".length()*14, PADDING*2+ICON_SIZE);
+		}
 		
 		arg0.setColor(new Color(189, 189, 189));
 		arg0.drawRoundRect(0, 0, neo.width()-1, neo.height()-1, 10, 10);
@@ -235,6 +267,8 @@ public class PaletteScene extends Scene{
 		arg0.drawLine(PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE, PADDING*2+ICON_SIZE*2, neo.height());
 		
 		text.render(arg0);
+		close.render(arg0);
+		minimize.render(arg0);
 	}
 	
 	@Override
@@ -245,15 +279,25 @@ public class PaletteScene extends Scene{
 				PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE*2);
 		Rectangle lowerRectangle = new Rectangle(0, (int) neo.height()-(PADDING*2+ICON_SIZE*2),
 				PADDING*2+ICON_SIZE*2, PADDING*2+ICON_SIZE*2);
+		Rectangle titleRectangle = new Rectangle(0, 0,
+				"Settings".length()*14, PADDING*2+ICON_SIZE);
 		
 		if(r.intersects(upperRectangle)){
 			hover = -1;
-			velocity = (float) ((Math.max(0, upperRectangle.getHeight() - (r.getY() - (PADDING*2+ICON_SIZE))) * 5.0f) / upperRectangle.getHeight());
+			velocity = (float) ((Math.max(0, upperRectangle.getHeight() - (r.getY() - (PADDING*2+ICON_SIZE))) * 10.0f) / upperRectangle.getHeight());
 		}else if(r.intersects(lowerRectangle)){
 			hover = 1;
-			velocity = (float) (((r.getY()-lowerRectangle.getY()) * 5.0f) / lowerRectangle.getHeight());
+			velocity = (float) (((r.getY()-lowerRectangle.getY()) * 10.0f) / lowerRectangle.getHeight());
 		}else{
 			hover = 0;
+		}
+		
+		if(r.intersects(titleRectangle)){
+			settings = true;
+			text.setText("Settings");
+		}else{
+			settings = false;
+			text.setText("ColorsApp");
 		}
 		
 		return false;

@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.LinkedList;
+import java.util.Map;
 
 import com.frostbyte.neo.framework.ObjectID;
 import com.frostbyte.neo.objects.GameObject;
@@ -21,6 +22,8 @@ public class ColorObject extends GameObject{
 	private float offsetSize = 0;
 	private float offsetY = 0;
 	
+	private Map<String, Color> colors;
+	
 	public ColorObject(float x, float y, float size, String name, Color color, ColorListener listener) {
 		super(x, y, ObjectID.dummy);
 		
@@ -28,6 +31,10 @@ public class ColorObject extends GameObject{
 		this.color = color;
 		this.name = name;
 		this.listener = listener;
+	}
+	
+	public void setColors(Map<String, Color> colors){
+		this.colors = colors;
 	}
 	
 	@Override
@@ -69,8 +76,10 @@ public class ColorObject extends GameObject{
 
 	@Override
 	public boolean onClick(Rectangle r) {
-		if(r.intersects(getBounds()))
+		if(r.intersects(getBounds())){
+			listener.colors = this.colors;
 			listener.onColorChanged(name);
+		}
 		
 		return true;
 	}
