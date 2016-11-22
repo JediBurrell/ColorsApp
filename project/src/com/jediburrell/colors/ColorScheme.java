@@ -126,7 +126,7 @@ public class ColorScheme {
         return intArray;
     }
 
-	public Map getMap() {
+	public Map<String, Map<String, java.awt.Color>> getMap() {
 		
 		return map;
 	}

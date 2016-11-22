@@ -6,8 +6,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import processing.core.PApplet;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import jto.colorscheme.Color;
 import jto.colorscheme.ColorSet;
@@ -181,7 +178,6 @@ class Parser {
         return palette;
     }
 
-    @SuppressWarnings("unused")
 	private static void readBlock(ByteBuffer buf, Palette palette, int colorSetIndex) {    	
         buf.mark();
         short blockType = buf.getShort();

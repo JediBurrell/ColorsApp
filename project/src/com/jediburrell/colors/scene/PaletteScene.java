@@ -7,25 +7,18 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.JFrame;
-import javax.swing.text.html.HTMLDocument.Iterator;
-
-import jto.colorscheme.ColorSet;
 
 import com.frostbyte.neo.Neo;
+import com.frostbyte.neo.exceptions.ResourceNotFoundException;
 import com.frostbyte.neo.framework.BufferedImageLoader;
-import com.frostbyte.neo.framework.FileManager;
+import com.frostbyte.neo.framework.Resources;
 import com.frostbyte.neo.gui.TextObject;
 import com.frostbyte.neo.objects.GameObject;
 import com.frostbyte.neo.scene.Scene;
@@ -49,7 +42,7 @@ public class PaletteScene extends Scene{
 	private TextObject text;
 	private ActionableIconObject close, minimize;
 	
-	private boolean settings = false;
+	private int settings = 0;
 	
 	// Color palette scrolling.
 	
@@ -71,12 +64,12 @@ public class PaletteScene extends Scene{
 	private LinkedList<GameObject> toAdd = new LinkedList<GameObject>();
 	private LinkedList<GameObject> toRemove = new LinkedList<GameObject>();
 	
-	public PaletteScene(Neo neo, WindowOverride window) {
+	public PaletteScene(Neo neo, WindowOverride window) throws ResourceNotFoundException {
 		super(neo);
 		
 		this.neo = neo;
 		this.window = window;
-		colors = new ColorScheme(FileManager.getAppdata()+"/.colorsapp/material.ase");
+		colors = new ColorScheme(Resources.getString("ase_location"));
 		map = colors.getMap();
 		
 		listener = new ColorListener() {
@@ -162,14 +155,14 @@ public class PaletteScene extends Scene{
 		boolean first = true;
 		boolean second = false;
 		
-		for(Map.Entry<String, Map<String, Color>> entry : map.entrySet()){
+		TreeMap<String, Map<String, Color>> sorted = new TreeMap<String, Map<String, Color>>(map);
+		
+		for(Map.Entry<String, Map<String, Color>> entry : sorted.entrySet()){
 			if(first){
 				first = false;
 				second = true;
-				continue;
 			}
 			
-			String key = entry.getKey();
 			Map<String, Color> value = entry.getValue();
 			
 			java.util.Iterator<Entry<String, Color>> it = value.entrySet().iterator();
@@ -301,8 +294,11 @@ public class PaletteScene extends Scene{
 		arg0.setColor(new Color(224, 224, 224));
 		arg0.fillRect(0, 0, neo.width(), PADDING*2+ICON_SIZE);
 		
-		if(settings){
+		if(settings == 1){
 			arg0.setColor(new Color(189, 189, 189));
+			arg0.fillRect(0, 0, "Settings".length()*14, PADDING*2+ICON_SIZE);
+		}else if(settings == 2){
+			arg0.setColor(new Color(157, 157, 157));
 			arg0.fillRect(0, 0, "Settings".length()*14, PADDING*2+ICON_SIZE);
 		}
 		
@@ -354,14 +350,48 @@ public class PaletteScene extends Scene{
 		}
 		
 		if(r.intersects(titleRectangle)){
-			settings = true;
+			settings = 1;
 			text.setText("Settings");
 		}else{
-			settings = false;
+			settings = 0;
 			text.setText("ColorsApp");
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public boolean onTouch(Rectangle r) {
+		super.onTouch(r);
+		
+		Rectangle titleRectangle = new Rectangle(0, 0,
+				"Settings".length()*14, PADDING*2+ICON_SIZE);
+		
+		if(r.intersects(titleRectangle))
+			settings = 2;
+			
+		
+		return false;
+	}
+	
+	@Override
+	public boolean onClick(Rectangle r) {
+		super.onClick(r);
+		
+		settings = 0;
+		
+		Rectangle titleRectangle = new Rectangle(0, 0,
+				"Settings".length()*14, PADDING*2+ICON_SIZE);
+		
+		if(r.intersects(titleRectangle)){
+			settings = 1;
+			try {
+				toScene(new SettingsScene(neo, window));
+			} catch (ResourceNotFoundException e) {
+			}
+		}
+		
+		return super.onClick(r);
 	}
 
 }

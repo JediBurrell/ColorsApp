@@ -16,6 +16,7 @@ public class ColorSelectorObject extends GameObject{
 	private float offsetY = 0;
 	
 	private boolean hover = false;
+	private boolean light = false;
 	
 	public ColorSelectorObject(float x, float y, float width, float height, String title, Color color){
 		super(x, y, ObjectID.dummy);
@@ -24,15 +25,18 @@ public class ColorSelectorObject extends GameObject{
 		this.height = height;
 		this.title = title;
 		this.color = color;
+		
+		light = color.getRed()+color.getGreen()+color.getBlue() >= 600;
 	}
 	
 	@Override
 	public void render(Graphics arg0) {
 		
-		arg0.setColor(color);
+		arg0.setColor(hover ? color.darker() : color);
 		arg0.fillRoundRect((int) x, (int) (y+offsetY), (int) width, (int) height, 5, 5);
 		
-		arg0.setColor(Color.WHITE);
+		arg0.setColor(light ? hover ? color.darker().darker().darker() : color.darker().darker()
+				: hover ? new Color(255, 255, 255, 200) : new Color(255, 255, 255, 150));
 		arg0.setFont(Font.decode(Font.DIALOG_INPUT).deriveFont(10));
 		arg0.drawString(hover ? "Copy to clipboard." : title, (int) (x+title.length()), (int) (offsetY+y+(height/2)+4));
 		
